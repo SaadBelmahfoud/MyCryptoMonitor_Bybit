@@ -1,0 +1,28 @@
+# Fichiers sensibles
+.env
+*.pem
+*.key
+
+# Fichiers Python temporaires
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Fichiers de données et logs
+*.db
+*.log
+logs/
+data/
+
+# IDE/Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtualenv
+venv/
+env/

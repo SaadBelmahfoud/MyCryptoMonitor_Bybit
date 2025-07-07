@@ -1,0 +1,12 @@
+
+# File: bot_service/requirements.txt
+# ——————————————————————————————
+# 📦 Dépendances pour le bot de trading
+SQLAlchemy==2.0.30
+ccxt==4.2.82
+loguru
+psycopg2-binary==2.9.9
+python-dotenv
+requests
+requests==2.31.0
+sqlalchemy

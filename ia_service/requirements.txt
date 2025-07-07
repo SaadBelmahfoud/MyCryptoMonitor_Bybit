@@ -1,0 +1,13 @@
+
+# File: ia_service/requirements.txt
+ccxt
+fastapi
+loguru
+psycopg2-binary
+pydantic
+pydantic==1.10.12
+python-dotenv
+requests
+sqlalchemy
+uvicorn
+uvicorn[standard]

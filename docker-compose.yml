@@ -1,0 +1,80 @@
+version: "3.9"
+
+services:
+  bot_db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: userbot
+      POSTGRES_PASSWORD: passbot
+      POSTGRES_DB: bot_db
+    volumes:
+      - bot_db_data:/var/lib/postgresql/data
+    networks:
+      - trading_net
+
+  ia_db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: useria
+      POSTGRES_PASSWORD: passia
+      POSTGRES_DB: ia_db
+    volumes:
+      - ia_db_data:/var/lib/postgresql/data
+    networks:
+      - trading_net
+
+  redis:
+    image: redis:alpine
+    networks:
+      - trading_net
+
+  ia_service:
+    build:
+      context: ./ia_service
+    depends_on:
+      - ia_db
+      - redis
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - ./ia_service:/app
+    networks:
+      - trading_net
+
+  bot_service:
+    build:
+      context: ./bot_service
+    depends_on:
+      - bot_db
+      - redis
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - ./bot_service:/app
+    networks:
+      - trading_net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - ia_service
+    networks:
+      - trading_net
+
+volumes:
+  bot_db_data:
+  ia_db_data:
+
+networks:
+  trading_net:

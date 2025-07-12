@@ -34,14 +34,9 @@ export default function Dashboard() {
       .catch(() => setErrors((e) => ({ ...e, predictions: 'Erreur Prédictions' })));
   }, []);
 
-  const parsed = wallet?.balances?.balances?.parsed_balances?.UNIFIED || {};
-
-  const pieData = Object.entries(parsed).map(([symbol, obj]) => ({
-    name: symbol,
-    value: parseFloat(obj?.usdValue || 0),
-  }));
-
-  const totalUSD = pieData.reduce((acc, curr) => acc + curr.value, 0).toFixed(2);
+  // ✅ Correction de profondeur
+  const parsed = wallet?.balances?.balances?.balances?.parsed_balances?.UNIFIED || {};
+  const totalUSD = Object.values(parsed).reduce((acc, curr) => acc + parseFloat(curr?.usdValue || 0), 0).toFixed(2);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -54,18 +49,7 @@ export default function Dashboard() {
         {errors.wallet ? (
           <p className="text-red-500">{errors.wallet}</p>
         ) : (
-          <>
-            <p className="text-3xl font-bold mb-4">${totalUSD}</p>
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie data={pieData} dataKey="value" outerRadius={80} label>
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </>
+          <p className="text-3xl font-bold text-green-600">${totalUSD}</p>
         )}
       </div>
 

@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     TIMEFRAMES: List[str]
 
     IA_API_TOKEN: str
-    API_EXCHANGES: List[str]
     RUN_INIT_SYNC: bool = False
 
     BYBIT_TESTNET: bool = False

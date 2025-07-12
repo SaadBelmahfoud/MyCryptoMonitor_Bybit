@@ -34,7 +34,14 @@ export default function Dashboard() {
       .catch(() => setErrors((e) => ({ ...e, predictions: 'Erreur Prédictions' })));
   }, []);
 
-  const pieData = wallet ? Object.entries(wallet.balances).map(([key, value]) => ({ name: key, value })) : [];
+  const parsed = wallet?.balances?.balances?.parsed_balances?.UNIFIED || {};
+
+  const pieData = Object.entries(parsed).map(([symbol, obj]) => ({
+    name: symbol,
+    value: parseFloat(obj?.usdValue || 0),
+  }));
+
+  const totalUSD = pieData.reduce((acc, curr) => acc + curr.value, 0).toFixed(2);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -48,9 +55,7 @@ export default function Dashboard() {
           <p className="text-red-500">{errors.wallet}</p>
         ) : (
           <>
-            <p className="text-3xl font-bold mb-4">
-              ${Object.values(wallet?.balances || {}).reduce((a, b) => a + b, 0).toFixed(2)}
-            </p>
+            <p className="text-3xl font-bold mb-4">${totalUSD}</p>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie data={pieData} dataKey="value" outerRadius={80} label>

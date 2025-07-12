@@ -1,6 +1,6 @@
 # bot_service/strategies/dca.py
 
-from .base import Strategy
+from bot_service.strategies.base import Strategy
 from loguru import logger
 
 class DcaStrategy(Strategy):

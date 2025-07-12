@@ -1,4 +1,4 @@
-from .base import Strategy
+from bot_service.strategies.base import Strategy
 from loguru import logger
 
 class ScalpingStrategy(Strategy):

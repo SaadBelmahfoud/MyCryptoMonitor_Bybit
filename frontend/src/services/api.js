@@ -1,5 +1,4 @@
-// File: frontend/src/services/api.js
-// API centralisée pour tous les appels vers les services backend (Bot + IA)
+//--- File: frontend/src/services/api.js ---
 
 import axios from 'axios';
 

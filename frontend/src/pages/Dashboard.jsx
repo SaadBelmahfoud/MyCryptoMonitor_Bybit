@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 import Loader from '../components/Loader';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#a4de6c', '#d0ed57'];
+import { BadgeDollarSign, Bot, LineChart, Cpu, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,94 +20,117 @@ export default function Dashboard() {
   useEffect(() => {
     api.getBalances()
       .then((res) => setWallet(res.data))
-      .catch(() => setErrors((e) => ({ ...e, wallet: 'Erreur solde' })));
+      .catch(() => setErrors((e) => ({ ...e, wallet: 'Erreur de récupération du solde' })));
 
     api.getIaStatus()
       .then((res) => setStatus(res.data))
-      .catch(() => setErrors((e) => ({ ...e, status: 'Erreur IA' })));
+      .catch(() => setErrors((e) => ({ ...e, status: "Erreur de récupération de l'état IA" })));
 
     api.getBots()
       .then((res) => setBots(res.data))
-      .catch(() => setErrors((e) => ({ ...e, bots: 'Erreur Bots' })));
+      .catch(() => setErrors((e) => ({ ...e, bots: 'Erreur récupération bots' })));
 
     api.getPredictions()
       .then((res) => setPredictions(res.data))
-      .catch(() => setErrors((e) => ({ ...e, predictions: 'Erreur Prédictions' })));
+      .catch(() => setErrors((e) => ({ ...e, predictions: 'Erreur récupération prédictions' })));
   }, []);
 
-  // ✅ Correction de profondeur
-  const parsed = wallet?.balances?.balances?.balances?.parsed_balances?.UNIFIED || {};
-  const totalUSD = Object.values(parsed).reduce((acc, curr) => acc + parseFloat(curr?.usdValue || 0), 0).toFixed(2);
+  const coins = wallet?.balances?.balances?.balances?.parsed_balances?.UNIFIED || {};
+  const totalUSD = Object.values(coins).reduce(
+    (acc, c) => acc + parseFloat(c.usdValue || 0),
+    0
+  ).toFixed(2);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-      {/* Solde global */}
-      <div
-        className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition"
-        onClick={() => navigate('/wallet')}
+    <div className="p-6 space-y-6">
+      <motion.h1
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-3xl font-bold text-white flex items-center gap-3"
       >
-        <h3 className="text-xl font-semibold mb-2">💰 Solde total</h3>
-        {errors.wallet ? (
-          <p className="text-red-500">{errors.wallet}</p>
-        ) : (
-          <p className="text-3xl font-bold text-green-600">${totalUSD}</p>
-        )}
+        <BadgeDollarSign className="text-green-400" /> Tableau de bord
+      </motion.h1>
+
+      {Object.keys(errors).length > 0 && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-xl flex items-center gap-3">
+          <AlertTriangle />
+          <span>Erreur(s) détectée(s) : {Object.values(errors).join(' | ')}</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-500">
+              <BadgeDollarSign /> Solde total
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{totalUSD} USDT</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-500">
+              <Cpu /> IA
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg font-semibold">{status?.status || 'Inconnu'}</p>
+            <p className="text-sm text-muted-foreground">{status?.details}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-500">
+              <Bot /> Bots actifs
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1 text-sm">
+              {bots.map((bot, idx) => (
+                <li key={idx} className="flex justify-between">
+                  <span>{bot.name}</span>
+                  <span className="font-medium text-green-600">{bot.status}</span>
+                </li>
+              ))}
+              {bots.length === 0 && <li className="text-muted-foreground">Aucun bot actif</li>}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Statut IA */}
-      <div
-        className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition"
-        onClick={() => navigate('/ia-status')}
-      >
-        <h3 className="text-xl font-semibold mb-2">📡 État du service IA</h3>
-        {errors.status ? (
-          <p className="text-red-500">{errors.status}</p>
-        ) : (
-          <>
-            <p className={`text-2xl font-bold ${status?.status === 'ok' ? 'text-green-600' : 'text-red-500'}`}>
-              {status?.status === 'ok' ? '✅ Fonctionnel' : '❌ Injoignable'}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">Ping : {new Date(status?.timestamp).toLocaleString()}</p>
-          </>
-        )}
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-500">
+              <LineChart /> Prédictions du marché
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {predictions.length === 0 ? (
+              <p className="text-muted-foreground">Aucune prédiction disponible</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {predictions.map((pred, idx) => (
+                  <li
+                    key={idx}
+                    className="flex justify-between items-center border-b border-muted py-1"
+                  >
+                    <span>{pred.symbol}</span>
+                    <span className="font-semibold">{pred.prediction}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Statut Bots */}
-      <div
-        className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition"
-        onClick={() => navigate('/bots')}
-      >
-        <h3 className="text-xl font-semibold mb-2">🤖 Bots actifs</h3>
-        {errors.bots ? (
-          <p className="text-red-500">{errors.bots}</p>
-        ) : (
-          <>
-            <p className="text-3xl font-bold mb-4">{bots.length}</p>
-            <p className="text-gray-600">Cliquer pour voir la liste</p>
-          </>
-        )}
-      </div>
-
-      {/* Prédictions IA */}
-      <div
-        className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition"
-        onClick={() => navigate('/predictions')}
-      >
-        <h3 className="text-xl font-semibold mb-2">🔮 Prédictions IA</h3>
-        {errors.predictions ? (
-          <p className="text-red-500">{errors.predictions}</p>
-        ) : (
-          <ul className="text-gray-700 space-y-1">
-            {predictions.slice(0, 4).map((p, idx) => (
-              <li key={idx} className="flex justify-between">
-                <span>{p.symbol}</span>
-                <span className={p.prediction === 'UP' ? 'text-green-600' : 'text-red-500'}>
-                  {p.prediction}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="flex justify-end">
+        <Button onClick={() => navigate('/wallet')}>Voir mon portefeuille</Button>
       </div>
     </div>
   );

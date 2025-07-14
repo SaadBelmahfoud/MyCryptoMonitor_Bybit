@@ -1,12 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+//--- File: frontend/vite.config.js ---
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
     proxy: {
-      // Tout ce qui commence par /api est redirigé vers http://localhost:8000
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
@@ -20,4 +21,4 @@ export default defineConfig({
       '@': '/src',
     },
   },
-})
+});
